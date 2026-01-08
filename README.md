@@ -1,17 +1,17 @@
-# Ralph
+# Ralph (Claude Code Fork)
 
 ![Ralph](ralph.webp)
 
-Ralph is an autonomous AI agent loop that runs [Amp](https://ampcode.com) repeatedly until all PRD items are complete. Each iteration is a fresh Amp instance with clean context. Memory persists via git history, `progress.txt`, and `prd.json`.
+Ralph is an autonomous AI agent loop that runs [Claude Code](https://docs.anthropic.com/en/docs/claude-code) repeatedly until all PRD items are complete. Each iteration is a fresh Claude Code instance with clean context. Memory persists via git history, `progress.txt`, and `prd.json`.
 
-Based on [Geoffrey Huntley's Ralph pattern](https://ghuntley.com/ralph/).
+Based on [Geoffrey Huntley's Ralph pattern](https://ghuntley.com/ralph/). Forked from [snarktank/ralph](https://github.com/snarktank/ralph) (original Amp version).
 
-[Read my in-depth article on how I use Ralph](https://x.com/ryancarson/status/2008548371712135632)
+[Read Ryan Carson's in-depth article on how he uses Ralph](https://x.com/ryancarson/status/2008548371712135632)
 
 ## Prerequisites
 
-- [Amp CLI](https://ampcode.com) installed and authenticated
-- `jq` installed (`brew install jq` on macOS)
+- [Claude Code CLI](https://docs.anthropic.com/en/docs/claude-code) installed and authenticated
+- `jq` installed (`brew install jq` on macOS, `apt install jq` on Linux)
 - A git repository for your project
 
 ## Setup
@@ -28,32 +28,17 @@ cp /path/to/ralph/prompt.md scripts/ralph/
 chmod +x scripts/ralph/ralph.sh
 ```
 
-### Option 2: Install skills globally
+### Option 2: Use skills (Amp only)
 
-Copy the skills to your Amp config for use across all projects:
+The `skills/` directory contains Amp-specific skills. For Claude Code, use the prompt.md approach in Option 1.
 
-```bash
-cp -r skills/prd ~/.config/amp/skills/
-cp -r skills/ralph ~/.config/amp/skills/
-```
-
-### Configure Amp auto-handoff (recommended)
-
-Add to `~/.config/amp/settings.json`:
-
-```json
-{
-  "amp.experimental.autoHandoff": { "context": 90 }
-}
-```
-
-This enables automatic handoff when context fills up, allowing Ralph to handle large stories that exceed a single context window.
+> **Note:** Claude Code handles context limits automatically - no additional configuration needed.
 
 ## Workflow
 
 ### 1. Create a PRD
 
-Use the PRD skill to generate a detailed requirements document:
+**With Amp:** Use the PRD skill to generate a detailed requirements document:
 
 ```
 Load the prd skill and create a PRD for [your feature description]
@@ -61,13 +46,17 @@ Load the prd skill and create a PRD for [your feature description]
 
 Answer the clarifying questions. The skill saves output to `tasks/prd-[feature-name].md`.
 
+**With Claude Code:** Ask Claude to create a PRD, or write `prd.json` manually (see `prd.json.example`).
+
 ### 2. Convert PRD to Ralph format
 
-Use the Ralph skill to convert the markdown PRD to JSON:
+**With Amp:** Use the Ralph skill to convert the markdown PRD to JSON:
 
 ```
 Load the ralph skill and convert tasks/prd-[feature-name].md to prd.json
 ```
+
+**With Claude Code:** Ask Claude to convert your PRD to the `prd.json` format.
 
 This creates `prd.json` with user stories structured for autonomous execution.
 
@@ -93,13 +82,13 @@ Ralph will:
 
 | File | Purpose |
 |------|---------|
-| `ralph.sh` | The bash loop that spawns fresh Amp instances |
-| `prompt.md` | Instructions given to each Amp instance |
+| `ralph.sh` | The bash loop that spawns fresh Claude Code instances |
+| `prompt.md` | Instructions given to each Claude Code instance |
 | `prd.json` | User stories with `passes` status (the task list) |
 | `prd.json.example` | Example PRD format for reference |
 | `progress.txt` | Append-only learnings for future iterations |
-| `skills/prd/` | Skill for generating PRDs |
-| `skills/ralph/` | Skill for converting PRDs to JSON |
+| `skills/prd/` | Skill for generating PRDs (Amp) |
+| `skills/ralph/` | Skill for converting PRDs to JSON (Amp) |
 | `flowchart/` | Interactive visualization of how Ralph works |
 
 ## Flowchart
@@ -120,7 +109,7 @@ npm run dev
 
 ### Each Iteration = Fresh Context
 
-Each iteration spawns a **new Amp instance** with clean context. The only memory between iterations is:
+Each iteration spawns a **new Claude Code instance** with clean context. The only memory between iterations is:
 - Git history (commits from previous iterations)
 - `progress.txt` (learnings and context)
 - `prd.json` (which stories are done)
@@ -140,9 +129,11 @@ Too big (split these):
 - "Add authentication"
 - "Refactor the API"
 
-### AGENTS.md Updates Are Critical
+### AGENTS.md / CLAUDE.md Updates Are Critical
 
-After each iteration, Ralph updates the relevant `AGENTS.md` files with learnings. This is key because Amp automatically reads these files, so future iterations (and future human developers) benefit from discovered patterns, gotchas, and conventions.
+After each iteration, Ralph updates the relevant `AGENTS.md` files with learnings. This is key because both Amp and Claude Code automatically read these files, so future iterations (and future human developers) benefit from discovered patterns, gotchas, and conventions.
+
+> **Tip:** Claude Code also reads `CLAUDE.md` files. You can use either convention.
 
 Examples of what to add to AGENTS.md:
 - Patterns discovered ("this codebase uses X for Y")
@@ -158,7 +149,11 @@ Ralph only works if there are feedback loops:
 
 ### Browser Verification for UI Stories
 
-Frontend stories must include "Verify in browser using dev-browser skill" in acceptance criteria. Ralph will use the dev-browser skill to navigate to the page, interact with the UI, and confirm changes work.
+Frontend stories should include browser verification in acceptance criteria.
+
+**With Amp:** Use the dev-browser skill to navigate to the page and verify changes.
+
+**With Claude Code:** Use available browser/screenshot tools or MCP integrations to verify UI changes work.
 
 ### Stop Condition
 
@@ -190,7 +185,19 @@ Edit `prompt.md` to customize Ralph's behavior for your project:
 
 Ralph automatically archives previous runs when you start a new feature (different `branchName`). Archives are saved to `archive/YYYY-MM-DD-feature-name/`.
 
+## Keeping Up with Upstream
+
+This fork tracks the original Amp version. To pull in updates:
+
+```bash
+git fetch upstream
+git log HEAD..upstream/main --oneline  # see what's new
+git merge upstream/main                 # merge updates (may need manual adaptation)
+```
+
 ## References
 
 - [Geoffrey Huntley's Ralph article](https://ghuntley.com/ralph/)
+- [Claude Code documentation](https://docs.anthropic.com/en/docs/claude-code)
+- [Original Amp version (snarktank/ralph)](https://github.com/snarktank/ralph)
 - [Amp documentation](https://ampcode.com/manual)
