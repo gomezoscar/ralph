@@ -28,9 +28,23 @@ cp /path/to/ralph/prompt.md scripts/ralph/
 chmod +x scripts/ralph/ralph.sh
 ```
 
-### Option 2: Use skills (Amp only)
+### Option 2: Install Claude Code commands/skills
 
-The `skills/` directory contains Amp-specific skills. For Claude Code, use the prompt.md approach in Option 1.
+Copy the Claude Code commands and plugin to your project:
+
+```bash
+# From your project root
+cp -r /path/to/ralph/.claude .
+```
+
+This gives you:
+- `/prd` command - Generate a PRD interactively
+- `/convert-prd` command - Convert PRD markdown to prd.json
+- Auto-triggering skills for natural language ("create a prd for...")
+
+### Option 3: Use Amp skills
+
+The `skills/` directory contains Amp-specific skills.
 
 > **Note:** Claude Code handles context limits automatically - no additional configuration needed.
 
@@ -38,25 +52,41 @@ The `skills/` directory contains Amp-specific skills. For Claude Code, use the p
 
 ### 1. Create a PRD
 
-**With Amp:** Use the PRD skill to generate a detailed requirements document:
+**With Claude Code:** Use the `/prd` command or natural language:
+
+```bash
+# Using the command
+/prd add user authentication
+
+# Or natural language (skill auto-triggers)
+"Create a PRD for the notification system"
+```
+
+Answer the clarifying questions. The skill saves output to `tasks/prd-[feature-name].md`.
+
+**With Amp:** Use the PRD skill:
 
 ```
 Load the prd skill and create a PRD for [your feature description]
 ```
 
-Answer the clarifying questions. The skill saves output to `tasks/prd-[feature-name].md`.
-
-**With Claude Code:** Ask Claude to create a PRD, or write `prd.json` manually (see `prd.json.example`).
-
 ### 2. Convert PRD to Ralph format
 
-**With Amp:** Use the Ralph skill to convert the markdown PRD to JSON:
+**With Claude Code:** Use the `/convert-prd` command or natural language:
+
+```bash
+# Using the command
+/convert-prd tasks/prd-notifications.md
+
+# Or natural language
+"Convert tasks/prd-notifications.md to ralph format"
+```
+
+**With Amp:** Use the Ralph skill:
 
 ```
 Load the ralph skill and convert tasks/prd-[feature-name].md to prd.json
 ```
-
-**With Claude Code:** Ask Claude to convert your PRD to the `prd.json` format.
 
 This creates `prd.json` with user stories structured for autonomous execution.
 
@@ -87,6 +117,8 @@ Ralph will:
 | `prd.json` | User stories with `passes` status (the task list) |
 | `prd.json.example` | Example PRD format for reference |
 | `progress.txt` | Append-only learnings for future iterations |
+| `.claude/commands/` | Claude Code slash commands (`/prd`, `/convert-prd`) |
+| `.claude/plugins/ralph/` | Claude Code plugin with auto-triggering skills |
 | `skills/prd/` | Skill for generating PRDs (Amp) |
 | `skills/ralph/` | Skill for converting PRDs to JSON (Amp) |
 | `flowchart/` | Interactive visualization of how Ralph works |
