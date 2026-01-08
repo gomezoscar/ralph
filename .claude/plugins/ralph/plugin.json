@@ -1,0 +1,9 @@
+{
+  "name": "ralph",
+  "version": "1.0.0",
+  "description": "Ralph autonomous agent loop tools - PRD generation and task management",
+  "skills": [
+    "skills/prd.md",
+    "skills/convert-prd.md"
+  ]
+}
